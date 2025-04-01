@@ -125,22 +125,70 @@ const delete_product = async (req, res) => {
   };
 
 
-  const edit_product = async (req, res) => {
+//   const edit_product = async (req, res) => {
     
-    try {
-        const id = req.params._id; // Get product ID from URL parameter
-        const updatedData = req.body; // Get updated data from the request body
+//     try {
+//         const id = req.params._id; // Get product ID from URL parameter
+//         const updatedData = req.body; // Get updated data from the request body
+
+
     
         
 
-        // If there are new files, upload them to Cloudinary
-        if (req.files) {
+//         // If there are new files, upload them to Cloudinary
+//         if (req.files) {
+//             const newDocumentPic = [];
+//             for (let file of req.files) {
+//                 const result = await cloudinary.uploader.upload(file.path);
+//                 newDocumentPic.push(result.secure_url);
+//             }
+//             updatedData.product_image = newDocumentPic; // Update the product image field
+//         }
+
+//         // Find the product by ID and update it
+//         const updatedProduct = await addproduct.findByIdAndUpdate(
+//             id, // Find product by ID
+//             updatedData, // Fields to update
+//             { new: true } // Return the updated product
+//         );
+
+//         if (!updatedProduct) {
+//             return res.status(404).send({ message: 'Product not found' });
+//         }
+
+//         res.status(200).send({
+//             message: 'Product updated successfully',
+//             product: updatedProduct,
+//         });
+//     } catch (error) {
+//         console.error('Error updating product:', error);
+//         res.status(500).send({ message: 'Failed to update product', error });
+//     }
+// };
+
+
+const edit_product = async (req, res) => {
+    try {
+        const id = req.params._id; // Get product ID from URL parameter
+        const updatedData = req.body; // Get updated data from the request body
+
+        // Retrieve the existing product data
+        const existingProduct = await addproduct.findById(id);
+
+        if (!existingProduct) {
+            return res.status(404).send({ message: 'Product not found' });
+        }
+
+        // Check if there are new files to upload
+        if (req.files && req.files.length > 0) {
             const newDocumentPic = [];
             for (let file of req.files) {
                 const result = await cloudinary.uploader.upload(file.path);
                 newDocumentPic.push(result.secure_url);
             }
-            updatedData.product_image = newDocumentPic; // Update the product image field
+            updatedData.product_image = newDocumentPic; // Update with new images
+        } else {
+            updatedData.product_image = existingProduct.product_image; // Keep existing images
         }
 
         // Find the product by ID and update it

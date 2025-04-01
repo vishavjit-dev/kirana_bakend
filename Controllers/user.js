@@ -8,13 +8,15 @@ require('dotenv').config();
 exports.signup = async (req, res) => {
 
   console.log(req.body);
-    const { username, email, password } = req.body;
+    const { username, email, password, phone } = req.body;
   
-    
+    if (!username || !email || !password || !phone) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
   
     try {
       // Check if user already exists
-      const existingUser = await User.findOne({ email });
+      const existingUser = await User.findOne({ email, phone });
       if (existingUser) {
         return res.status(400).json({ message: "User already exists" });
       }
@@ -24,6 +26,7 @@ exports.signup = async (req, res) => {
         username,
         email,
         password,
+        phone,
       });
   
       // Save the user to the database
@@ -39,13 +42,21 @@ exports.signup = async (req, res) => {
 
 
   exports.login = async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
+
+    console.log(req.body);
+    
    
     
   
     try {
       // Check if the user exists by username
-      const user = await User.findOne({ username:username });
+      // const user = await User.findOne({ phone:email });
+
+      const user = await User.findOne({
+        $or: [{ email: email }, { phone: email }]
+      });
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }

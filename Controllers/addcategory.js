@@ -11,17 +11,8 @@ cloudinary.config({
 const add_category = async (req, res) => {
     try {
         const { 
-            // product_code,
             category_name,
-            // product_type,
-            // product_name,
-            // product_sku,
-            // product_price,
-            // product_discount,
             category_image,
-            // product_description,
-            // product_benefits,
-            // product_quantity1,
            
             
         } = req.body;
@@ -34,9 +25,7 @@ const add_category = async (req, res) => {
             // Upload files to Cloudinary and get the URLs
             for (let file of req.files) {
               const result = await cloudinary.uploader.upload(file.path);
-              newDocumentPic.push(result.secure_url);  // Store the URL of the uploaded image
-              // Optionally, you could delete the file from the server after uploading (uncomment below if needed)
-              // fs.unlinkSync(file.path);
+              newDocumentPic.push(result.secure_url);
             }
           }
  
@@ -44,17 +33,8 @@ const add_category = async (req, res) => {
         // Create a new contact with the uploaded Cloudinary URLs
         const newAddcategory = new addcategory({
            
-            // product_code,
-            // product_category,
-            // product_type,
             category_name,
-            // product_price,
-            // product_discount,
-            // product_sku,
             category_image:newDocumentPic,
-            // product_description,
-            // product_benefits,
-            // product_quantity1,
             
             
         });
@@ -79,29 +59,6 @@ const viewcategory= async(req,res)=>
     }
 }
 
-// const viewcategorybyid= async(req,res)=>
-//   {
-//       try {
-//         const id=req.params._id
-//           const resp=await addcategory.find({_id:id})
-//           res.status(200).send({message:"category data fetch",category:resp})
-//       } catch (error) {
-//           console.log(error);
-          
-//       }
-//   }
-
-//   const viewcategorybycategory= async(req,res)=>
-//     {
-//         try {
-//           const category=req.params.category_name
-//             const resp=await addcategory.find({category_name:category})
-//             res.status(200).send({message:"category data fetch",category:resp})
-//         } catch (error) {
-//             console.log(error);
-            
-//         }
-//     }
 
 const delete_category = async (req, res) => {
     try {
@@ -125,38 +82,84 @@ const delete_category = async (req, res) => {
   };
 
 
-  const edit_category = async (req, res) => {
+//   const edit_category = async (req, res) => {
     
-    try {
-        const id = req.params._id; // Get product ID from URL parameter
-        const updatedData = req.body; // Get updated data from the request body
+//     try {
+//         const id = req.params._id; // Get product ID from URL parameter
+//         const updatedData = req.body; // Get updated data from the request body
     
         
 
-        // If there are new files, upload them to Cloudinary
-        if (req.files) {
+//         // If there are new files, upload them to Cloudinary
+//         if (req.files) {
+//             const newDocumentPic = [];
+//             for (let file of req.files) {
+//                 const result = await cloudinary.uploader.upload(file.path);
+//                 newDocumentPic.push(result.secure_url);
+//             }
+//             updatedData.category_image = newDocumentPic; // Update the product image field
+//         }
+
+//         // Find the product by ID and update it
+//         const updatedcategory = await addcategory.findByIdAndUpdate(
+//             id, // Find product by ID
+//             updatedData, // Fields to update
+//             { new: true } // Return the updated product
+//         );
+
+//         if (!updatedcategory) {
+//             return res.status(404).send({ message: 'category not found' });
+//         }
+
+//         res.status(200).send({
+//             message: 'category updated successfully',
+//             category: updatedcategory,
+//         });
+//     } catch (error) {
+//         console.error('Error updating category:', error);
+//         res.status(500).send({ message: 'Failed to update category', error });
+//     }
+// };
+
+
+const edit_category = async (req, res) => {
+    try {
+        const id = req.params._id; // Get category ID from URL parameter
+        const updatedData = req.body; // Get updated data from the request body
+
+        // Retrieve the existing category data
+        const existingCategory = await addcategory.findById(id);
+
+        if (!existingCategory) {
+            return res.status(404).send({ message: 'Category not found' });
+        }
+
+        // Check if there are new files to upload
+        if (req.files && req.files.length > 0) {
             const newDocumentPic = [];
             for (let file of req.files) {
                 const result = await cloudinary.uploader.upload(file.path);
                 newDocumentPic.push(result.secure_url);
             }
-            updatedData.category_image = newDocumentPic; // Update the product image field
+            updatedData.category_image = newDocumentPic; // Update with new images
+        } else {
+            updatedData.category_image = existingCategory.category_image; // Keep existing images
         }
 
-        // Find the product by ID and update it
-        const updatedcategory = await addcategory.findByIdAndUpdate(
-            id, // Find product by ID
+        // Update the category data in the database
+        const updatedCategory = await addcategory.findByIdAndUpdate(
+            id, // Find category by ID
             updatedData, // Fields to update
-            { new: true } // Return the updated product
+            { new: true } // Return the updated category
         );
 
-        if (!updatedcategory) {
-            return res.status(404).send({ message: 'category not found' });
+        if (!updatedCategory) {
+            return res.status(404).send({ message: 'Category not found' });
         }
 
         res.status(200).send({
-            message: 'category updated successfully',
-            category: updatedcategory,
+            message: 'Category updated successfully',
+            category: updatedCategory,
         });
     } catch (error) {
         console.error('Error updating category:', error);
